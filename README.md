@@ -1,6 +1,6 @@
 # Suspect Genie
 
-Suspect Genie is a Python-based machine learning tool designed for Symbotic that helps automatically identify shipping freight that may be unusable based on case dimensions and weight. By leveraging a neural network and robust data processing pipelines, Suspect Genie streamlines freight screening, reduces manual labor, and improves operational efficiency in warehouse and shipping environments.
+Suspect Genie is a Python-based machine learning tool designed for Symbotic that helps automatically identify shipping freight that may be unusable based on freight characteristics such as case dimensions and weight. By leveraging a neural network and robust data processing pipelines, Suspect Genie streamlines freight screening, reduces manual labor, and improves operational efficiency in warehouse and shipping environments.
 
 ---
 
