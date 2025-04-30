@@ -2,8 +2,38 @@ import pandas as pd
 import numpy as np
 from tensorflow import keras
 from joblib import load
-model = keras.models.load_model('neural_net_model', compile=False)
+model = keras.models.load_model('neural_net_model.h5', compile=False)
+label_encoders = load('label_encoders.bin')
+scaler = load('standard_scaler.bin')
 
+categorical_cols = list(label_encoders.keys())
+numerical_cols = [
+    'Length', 'Width', 'Height', 'Weight',
+    'Volume',
+    'weight_to_volume',
+    'length_to_width', 'length_to_height', 'width_to_height',
+    'length_squared', 'width_squared', 'height_squared',
+    'dimension_std',
+    'base_area_to_height',
+    'log_weight',
+    'cubed_length', 'cubed_width', 'cubed_height',
+    'cube_root_volume', 'square_root_volume',
+    'weight*volume',
+    'weight*length',
+    'length/(width+height)', 'width/(length+height)', 'height/(length+width)',
+    'weight/volume',
+    'weight**2/volume',
+    'Surface_Area',
+    'Diagonal',
+    'max_dimension', 'min_dimension', 'dimension_range',
+    'total_dimension',
+    'length_fraction', 'width_fraction', 'height_fraction',
+    'weight_times_total_dimension',
+    'diff_length_width', 'diff_length_height', 'diff_width_height',
+    'SA_to_Volume',
+        'log_Surface_Area',
+        'log_SA_to_Volume'
+    ]
 
 def predict_package_suspects(csv_path, threshold, batch_size=512):
     # Load model
@@ -91,44 +121,26 @@ def predict_package_suspects(csv_path, threshold, batch_size=512):
     df['log_Surface_Area'] = np.log(df['Surface_Area']+1)
 
     df['log_SA_to_Volume'] = np.log(df['SA_to_Volume']+1)
-
+    """
     # Ensure feature alignment
-    feature_columns = [
-    'Length', 'Width', 'Height', 'Weight',
-    'Volume',
-    'weight_to_volume',
-    'length_to_width', 'length_to_height', 'width_to_height',
-    'length_squared', 'width_squared', 'height_squared',
-    'dimension_std',
-    'base_area_to_height',
-    'log_weight',
-    'cubed_length', 'cubed_width', 'cubed_height',
-    'cube_root_volume', 'square_root_volume',
-    'weight*volume',
-    'weight*length',
-    'length/(width+height)', 'width/(length+height)', 'height/(length+width)',
-    'weight/volume',
-    'weight**2/volume',
-    'Surface_Area',
-    'Diagonal',
-    'max_dimension', 'min_dimension', 'dimension_range',
-    'total_dimension',
-    'length_fraction', 'width_fraction', 'height_fraction',
-    'weight_times_total_dimension',
-    'diff_length_width', 'diff_length_height', 'diff_width_height',
-    'SA_to_Volume',
-        'log_Surface_Area',
-        'log_SA_to_Volume'
-    ]
-
-    scaler = load('standard_scaler.bin')
+    cat_inputs = []
+    for col in categorical_cols:
+        encoded = label_encoders[col].transform(df[col].astype(str)).reshape(-1,1)
+        cat_inputs.append(encoded)
     
-    X = df[feature_columns]
-
-    X_scaled = scaler.transform(X)
+    numerical_data = scaler.transform(df[numerical_cols].values)
+    cat_inputs.append(numerical_data)
+    """
+    model_inputs = {}
+    for col in categorical_cols:
+        model_inputs[col] = label_encoders[col].transform(df[col].astype(str)).reshape(-1,1)
+    
+    
+    model_inputs["numerical_input"] = scaler.transform(df[numerical_cols].values)
+    
     # Predict
     print("Generating predictions...")
-    preds = model.predict(X_scaled).flatten()
+    preds = model.predict(model_inputs, batch_size=batch_size).flatten()
     predicted_labels = (preds > threshold).astype(int)
     
     # Format output

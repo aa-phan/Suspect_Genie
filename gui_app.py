@@ -509,7 +509,7 @@ class CSVProcessorApp(QMainWindow):
             
         except Exception as e:
             self.file_label.setText(f"Error processing file: {str(e)}")
-
+            print(f"Error processing file: {e}")
     def on_checkbox_changed(self, state):
         if state == Qt.CheckState.Checked:
             # When showing non-suspects, restrict to 50-100
